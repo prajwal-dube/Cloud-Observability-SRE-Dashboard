@@ -55,3 +55,14 @@ Follow `docs/EKS_SETUP.md` to build and deploy the instrumented image, install a
 7. `RESUME_POINTS.md` — conservative bullets and deployment wording after verification.
 
 Native configuration sources: [Prometheus histogram guidance](https://prometheus.io/docs/practices/histograms/), [rule unit tests](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/), [Alertmanager configuration](https://prometheus.io/docs/alerting/latest/configuration/), [Prometheus Operator API](https://prometheus-operator.dev/docs/api-reference/api/), and [kube-prometheus-stack chart](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack). Review current compatibility and security advisories before deploying. Local image tags are reproducibility choices; image scanning and digest pinning are follow-up work.
+
+## Resume Points
+
+**Cloud Observability & SRE Monitoring Framework**
+
+**Technologies:** Prometheus, Grafana, Python, Kubernetes (EKS), Helm, Alertmanager, Slack
+
+- Instrumented a custom **Python API** with Prometheus metrics, exposing request counters, latency histograms, HTTP health indicators, and application-level telemetry for service monitoring.
+- Designed a **12-panel Grafana observability dashboard** to visualize API error rates, request latency, service availability, and Kubernetes pod/node resource utilization.
+- Configured **10 Prometheus alert rules with Alertmanager**, including routing for application errors and latency anomalies, with optional Slack-based notification integration.
+- Built reproducible **incident simulations and SRE runbooks**, injecting controlled latency and HTTP 500 failures to validate alert behavior, incident diagnosis, recovery procedures, and monitoring workflows.
