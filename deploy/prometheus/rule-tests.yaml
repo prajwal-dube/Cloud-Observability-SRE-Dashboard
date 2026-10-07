@@ -1,0 +1,46 @@
+rule_files:
+- rules.yaml
+evaluation_interval: 15s
+tests:
+- interval: 1m
+  input_series:
+  - series: netops_http_requests_total{job="netops-api",namespace="netops",method="GET",route="/api/targets",status_class="2xx"}
+    values: 0+90x20
+  - series: netops_http_requests_total{job="netops-api",namespace="netops",method="GET",route="/api/targets",status_class="5xx"}
+    values: 0+10x20
+  alert_rule_test:
+  - eval_time: 10m
+    alertname: NetOpsHighErrorRate
+    exp_alerts:
+    - exp_labels:
+        namespace: netops
+        service: netops
+        severity: critical
+      exp_annotations:
+        summary: API 5xx error ratio exceeds 5%
+        description: At least 20 requests occurred in five minutes; inspect API logs and dependencies.
+        runbook: docs/RUNBOOKS.md
+- interval: 1m
+  input_series:
+  - series: netops_http_requests_total{job="netops-api",namespace="netops",method="GET",route="/api/targets",status_class="5xx"}
+    values: 0+1x20
+  alert_rule_test:
+  - eval_time: 10m
+    alertname: NetOpsHighErrorRate
+    exp_alerts: []
+- interval: 1m
+  input_series:
+  - series: up{job="netops-api",namespace="netops",instance="api:8000"}
+    values: '0x10'
+  alert_rule_test:
+  - eval_time: 5m
+    alertname: NetOpsAllAPITargetsDown
+    exp_alerts:
+    - exp_labels:
+        namespace: netops
+        service: netops
+        severity: critical
+      exp_annotations:
+        summary: All discovered API metrics targets are down
+        description: Inspect Pods, metrics handler, ServiceMonitor and network policy.
+        runbook: docs/RUNBOOKS.md

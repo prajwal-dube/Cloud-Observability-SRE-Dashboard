@@ -1,0 +1,39 @@
+test_counter_statuses_and_histogram (test_metrics.MetricsTests.test_counter_statuses_and_histogram) ... ok
+test_database_failure_does_not_falsely_export_health (test_metrics.MetricsTests.test_database_failure_does_not_falsely_export_health) ... ok
+test_health_and_metrics_requests_are_excluded (test_metrics.MetricsTests.test_health_and_metrics_requests_are_excluded) ... ok
+test_invalid_durations_never_create_samples (test_metrics.MetricsTests.test_invalid_durations_never_create_samples) ... ok
+test_labels_escape_quotes_backslashes_and_newlines (test_metrics.MetricsTests.test_labels_escape_quotes_backslashes_and_newlines) ... ok
+test_probe_gauges_and_target_cap (test_metrics.MetricsTests.test_probe_gauges_and_target_cap) ... ok
+test_routes_and_methods_have_bounded_cardinality (test_metrics.MetricsTests.test_routes_and_methods_have_bounded_cardinality) ... ok
+test_shared_process_transactions (test_metrics.MetricsTests.test_shared_process_transactions) ... ok
+test_shared_threaded_transactions (test_metrics.MetricsTests.test_shared_threaded_transactions) ... ok
+test_local_receiver_records_firing_and_resolved (test_notifications.NotificationTests.test_local_receiver_records_firing_and_resolved) ... {"received_at": 1791397189.6906502, "status": "firing", "alerts": [{"name": "TestOnly", "status": "firing"}]}
+{"received_at": 1791397189.6916773, "status": "resolved", "alerts": [{"name": "TestOnly", "status": "resolved"}]}
+ok
+test_receiver_rejects_malformed_payload (test_notifications.NotificationTests.test_receiver_rejects_malformed_payload) ... ok
+test_slack_config_references_file_and_filters_netops (test_notifications.NotificationTests.test_slack_config_references_file_and_filters_netops) ... ok
+test_slack_urls_reject_other_hosts_credentials_and_queries (test_notifications.NotificationTests.test_slack_urls_reject_other_hosts_credentials_and_queries) ... ok
+test_actual_project1_api_is_instrumented (test_wsgi.ObservedTests.test_actual_project1_api_is_instrumented) ... {"event": "request", "request_id": "fcc50428-316b-4362-9138-1b5393b3d592", "path": "/api/targets", "method": "GET", "status": 200, "duration_ms": 0.236}
+ok
+test_controlled_errors_and_delay_leave_probes_healthy (test_wsgi.ObservedTests.test_controlled_errors_and_delay_leave_probes_healthy) ... {"event": "request", "request_id": "9615b5f9-a79f-4054-860c-df7e910e9242", "path": "/api/targets", "method": "GET", "status": 200, "duration_ms": 0.451}
+{"event": "request", "request_id": "b938156a-519e-4d2e-9d43-10dd8c06dfb9", "path": "/readyz", "method": "GET", "status": 200, "duration_ms": 0.277}
+ok
+test_db_outage_still_exposes_request_metrics (test_wsgi.ObservedTests.test_db_outage_still_exposes_request_metrics) ... probe_metrics_collection_failed
+ok
+test_demo_flags_are_disabled_by_default (test_wsgi.ObservedTests.test_demo_flags_are_disabled_by_default) ... {"event": "request", "request_id": "d354ddab-580e-4394-9d54-5b5f372c226f", "path": "/api/targets", "method": "GET", "status": 200, "duration_ms": 0.163}
+ok
+test_ingestion_remains_authenticated_and_exposes_shared_probe (test_wsgi.ObservedTests.test_ingestion_remains_authenticated_and_exposes_shared_probe) ... {"event": "request", "request_id": "900a4aa2-abcd-4ee8-9322-3a64ce303ae2", "path": "/api/observations", "method": "POST", "status": 201, "duration_ms": 0.443}
+ok
+test_metrics_content_type_and_method (test_wsgi.ObservedTests.test_metrics_content_type_and_method) ... ok
+test_real_http_metrics_roundtrip (test_wsgi.ObservedTests.test_real_http_metrics_roundtrip) ... {"event": "request", "request_id": "bd9c2f17-717a-465c-9b54-ed865465ebd2", "path": "/api/targets", "method": "GET", "status": 200, "duration_ms": 0.248}
+ok
+test_telemetry_failure_does_not_break_application (test_wsgi.ObservedTests.test_telemetry_failure_does_not_break_application) ... {"event": "request", "request_id": "5641b8a9-b87c-411c-99a9-799705e3a50d", "path": "/api/targets", "method": "GET", "status": 200, "duration_ms": 0.155}
+request_telemetry_dropped
+ok
+test_unhandled_application_error_records_5xx (test_wsgi.ObservedTests.test_unhandled_application_error_records_5xx) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.714s
+
+OK
+Python/Bash syntax and dashboard JSON parsing: PASS

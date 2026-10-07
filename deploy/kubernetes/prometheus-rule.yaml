@@ -1,0 +1,133 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: netops-rules
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+  - name: netops.recording
+    interval: 15s
+    rules:
+    - record: netops:http_requests:rate5m
+      expr: sum by (namespace) (rate(netops_http_requests_total{job="netops-api",namespace="netops"}[5m]))
+    - record: netops:http_errors:ratio5m
+      expr: (sum by (namespace) (rate(netops_http_requests_total{job="netops-api",namespace="netops",status_class="5xx"}[5m]))
+        or on (namespace) (0 * netops:http_requests:rate5m)) / clamp_min(netops:http_requests:rate5m, 1e-9)
+    - record: netops:http_latency:p50_5m
+      expr: histogram_quantile(0.5, sum by (namespace, le) (rate(netops_http_request_duration_seconds_bucket{job="netops-api",namespace="netops"}[5m])))
+    - record: netops:http_latency:p95_5m
+      expr: histogram_quantile(0.95, sum by (namespace, le) (rate(netops_http_request_duration_seconds_bucket{job="netops-api",namespace="netops"}[5m])))
+    - record: netops:http_latency:p99_5m
+      expr: histogram_quantile(0.99, sum by (namespace, le) (rate(netops_http_request_duration_seconds_bucket{job="netops-api",namespace="netops"}[5m])))
+  - name: netops.alerts
+    interval: 15s
+    rules:
+    - alert: NetOpsHighErrorRate
+      expr: netops:http_errors:ratio5m{namespace="netops"} > 0.05 and on (namespace) sum by (namespace) (increase(netops_http_requests_total{job="netops-api",namespace="netops"}[5m]))
+        >= 20
+      for: 2m
+      labels:
+        severity: critical
+        service: netops
+      annotations:
+        summary: API 5xx error ratio exceeds 5%
+        description: At least 20 requests occurred in five minutes; inspect API logs and dependencies.
+        runbook: docs/RUNBOOKS.md
+    - alert: NetOpsHighP95Latency
+      expr: netops:http_latency:p95_5m{namespace="netops"} > 0.5 and on (namespace) sum by (namespace) (increase(netops_http_requests_total{job="netops-api",namespace="netops"}[5m]))
+        >= 20
+      for: 3m
+      labels:
+        severity: warning
+        service: netops
+      annotations:
+        summary: API p95 handling time exceeds 500 ms
+        description: Inspect resource pressure and database latency; this metric excludes ALB/Nginx/network time.
+        runbook: docs/RUNBOOKS.md
+    - alert: NetOpsAllAPITargetsDown
+      expr: sum by (namespace) (up{job="netops-api",namespace="netops"}) == 0
+      for: 2m
+      labels:
+        severity: critical
+        service: netops
+      annotations:
+        summary: All discovered API metrics targets are down
+        description: Inspect Pods, metrics handler, ServiceMonitor and network policy.
+        runbook: docs/RUNBOOKS.md
+    - alert: NetOpsAPITargetsMissing
+      expr: absent(up{job="netops-api",namespace="netops"})
+      for: 2m
+      labels:
+        severity: critical
+        service: netops
+      annotations:
+        summary: Prometheus has no API metrics targets
+        description: Inspect monitor selectors, service labels, API replicas and instrumentation rollout.
+        runbook: docs/RUNBOOKS.md
+    - alert: NetOpsProbeUnhealthy
+      expr: max by (namespace, target) (netops_probe_healthy{job="netops-api",namespace="netops"}) == 0
+      for: 1m
+      labels:
+        severity: warning
+        service: netops
+      annotations:
+        summary: A monitored HTTP service is unhealthy
+        description: Inspect the worker observations and target health; target values are deduplicated across API replicas.
+        runbook: docs/RUNBOOKS.md
+    - alert: NetOpsProbeStale
+      expr: time() - max by (namespace, target) (netops_probe_last_observed_timestamp_seconds{job="netops-api",namespace="netops"})
+        > 30
+      for: 1m
+      labels:
+        severity: warning
+        service: netops
+      annotations:
+        summary: HTTP probe observations are stale
+        description: Inspect the worker and ingestion path. Default probe interval is ten seconds.
+        runbook: docs/RUNBOOKS.md
+    - alert: NetOpsProbeDataMissing
+      expr: absent(netops_probe_last_observed_timestamp_seconds{job="netops-api",namespace="netops",target="api"}) or absent(netops_probe_last_observed_timestamp_seconds{job="netops-api",namespace="netops",target="frontend"})
+      for: 2m
+      labels:
+        severity: warning
+        service: netops
+      annotations:
+        summary: Expected API/frontend probe data is missing
+        description: Inspect shared database collection, worker ingestion, and metrics target discovery.
+        runbook: docs/RUNBOOKS.md
+    - alert: NetOpsDatabaseCollectionFailed
+      expr: max by (namespace) (netops_database_collect_success{job="netops-api",namespace="netops"}) == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: netops
+      annotations:
+        summary: All API replicas failed to read shared probe data
+        description: Inspect PostgreSQL readiness, credentials and network connectivity.
+        runbook: docs/RUNBOOKS.md
+    - alert: NetOpsAPIHighCPU
+      expr: sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{namespace="netops",container="api",image!=""}[5m]))
+        / sum by (namespace, pod) (kube_pod_container_resource_limits{namespace="netops",container="api",resource="cpu",unit="core"})
+        > 0.85
+      for: 5m
+      labels:
+        severity: warning
+        service: netops
+      annotations:
+        summary: API CPU exceeds 85% of its configured limit
+        description: Investigate traffic, throttling and capacity; this rule needs EKS cAdvisor and kube-state-metrics.
+        runbook: docs/RUNBOOKS.md
+    - alert: NetOpsAPIHighMemory
+      expr: sum by (namespace, pod) (container_memory_working_set_bytes{namespace="netops",container="api",image!=""}) / sum
+        by (namespace, pod) (kube_pod_container_resource_limits{namespace="netops",container="api",resource="memory",unit="byte"})
+        > 0.85
+      for: 5m
+      labels:
+        severity: warning
+        service: netops
+      annotations:
+        summary: API memory exceeds 85% of its configured limit
+        description: Inspect leaks, container limits and restarts; this rule needs cluster container metrics.
+        runbook: docs/RUNBOOKS.md

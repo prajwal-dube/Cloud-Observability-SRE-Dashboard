@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: netops-observed-api
+  namespace: netops
+  labels:
+    netops_job: netops-api
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: lab
+    component: api
+  ports:
+    - name: metrics
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: netops-api
+  namespace: netops
+  labels:
+    release: monitoring
+spec:
+  jobLabel: netops_job
+  namespaceSelector:
+    matchNames: [netops]
+  selector:
+    matchLabels:
+      netops_job: netops-api
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s

@@ -1,0 +1,7 @@
+# Disposable lab exercise only. Remove this overlay to restore normal behavior.
+services:
+  api:
+    environment:
+      OBS_DEMO_MODE: "true"
+      OBS_DEMO_DELAY_MS: "750"
+      OBS_DEMO_ERROR_EVERY: "4"

@@ -1,0 +1,84 @@
+# Helm release name must be "monitoring", namespace "monitoring".
+defaultRules:
+  create: true
+  rules:
+    etcd: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+grafana:
+  enabled: true
+  admin:
+    existingSecret: netops-grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  service:
+    type: ClusterIP
+  persistence:
+    enabled: false
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {cpu: 250m, memory: 256Mi}
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: monitoring
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+      uid: prometheus
+prometheus:
+  service:
+    type: ClusterIP
+  prometheusSpec:
+    retention: 6h
+    retentionSize: 1GB
+    scrapeInterval: 15s
+    evaluationInterval: 15s
+    resources:
+      requests: {cpu: 200m, memory: 512Mi}
+      limits: {cpu: 1000m, memory: 1Gi}
+    serviceMonitorSelector:
+      matchLabels: {release: monitoring}
+    serviceMonitorNamespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values: [monitoring, netops]
+    ruleSelector:
+      matchLabels: {release: monitoring}
+    ruleNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: monitoring
+alertmanager:
+  service:
+    type: ClusterIP
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: lab-null
+      group_by: [alertname, namespace]
+      group_wait: 15s
+      group_interval: 1m
+      repeat_interval: 30m
+    receivers:
+      - name: lab-null
+  alertmanagerSpec:
+    resources:
+      requests: {cpu: 25m, memory: 64Mi}
+      limits: {cpu: 250m, memory: 128Mi}
+prometheusOperator:
+  resources:
+    requests: {cpu: 50m, memory: 96Mi}
+    limits: {cpu: 500m, memory: 256Mi}

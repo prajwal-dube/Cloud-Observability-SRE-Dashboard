@@ -1,0 +1,8 @@
+.secrets/
+*.local.*
+__pycache__/
+*.pyc
+*.db
+*.sqlite3*
+results/*.json
+!results/verification.json

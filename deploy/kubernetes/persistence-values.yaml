@@ -1,0 +1,27 @@
+# Optional: requires Project 1's netops-gp3 StorageClass and working EBS CSI driver.
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: netops-gp3
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 5Gi
+grafana:
+  persistence:
+    enabled: true
+    storageClassName: netops-gp3
+    accessModes: [ReadWriteOnce]
+    size: 1Gi
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: netops-gp3
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 1Gi
